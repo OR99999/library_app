@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t.title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    {% if lang == 'ar' %}
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    {% endif %}
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { 
+            --primary-color: #5D4037;
+            --secondary-color: #8D6E63;
+            --accent-color: #D4A043;
+            --light-bg: #EFEBE9;
+        }
+        body { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); min-height: 100vh; padding: 20px; font-family: {% if lang == 'ar' %}'Cairo',{% endif %} -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .main-container { max-width: 1400px; margin: 0 auto; }
+        .language-selector { position: fixed; top: 20px; {% if lang == 'ar' %}left: 20px;{% else %}right: 20px;{% endif %} z-index: 9999; background: white; padding: 8px 15px; border-radius: 50px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); display: flex; gap: 10px; }
+        .flag-link { text-decoration: none; font-size: 24px; opacity: 0.6; transition: all 0.3s; }
+        .flag-link:hover, .flag-link.active { opacity: 1; transform: scale(1.2); }
+        .admin-button { position: fixed; bottom: 30px; {% if lang == 'ar' %}left: 30px;{% else %}right: 30px;{% endif %} z-index: 9999; }
+        .admin-btn { width: 60px; height: 60px; border-radius: 50%; background: white; border: none; box-shadow: 0 5px 20px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--primary-color); cursor: pointer; transition: all 0.3s; text-decoration: none; }
+        .admin-btn:hover { transform: scale(1.1); background: var(--accent-color); color: white; }
+        .welcome-section { text-align: center; color: white; margin-bottom: 30px; }
+        .welcome-title { font-size: 36px; font-weight: bold; margin-bottom: 10px; }
+        .welcome-subtitle { font-size: 18px; opacity: 0.9; }
+        .search-filter { background: white; border-radius: 15px; padding: 20px; margin-bottom: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .search-box { display: flex; gap: 10px; margin-bottom: 15px; }
+        .search-box input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 10px; }
+        .search-box button { padding: 10px 20px; background: var(--primary-color); color: white; border: none; border-radius: 10px; cursor: pointer; }
+        .categories { display: flex; gap: 10px; flex-wrap: wrap; }
+        .category-btn { padding: 8px 20px; border: 1px solid var(--accent-color); background: white; border-radius: 25px; cursor: pointer; transition: all 0.3s; }
+        .category-btn:hover, .category-btn.active { background: var(--accent-color); color: white; }
+        .books-container { background: var(--light-bg); border-radius: 20px; padding: 30px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .books-title { text-align: center; margin-bottom: 30px; color: var(--primary-color); }
+        .books-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        .book-card { background: white; border-radius: 15px; padding: 20px; text-align: center; transition: all 0.3s; border: 1px solid #e0e0e0; position: relative; }
+        .book-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: var(--accent-color); }
+        .book-image img { width: 120px; height: 160px; object-fit: cover; margin-bottom: 15px; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
+        .book-title { font-weight: bold; margin-bottom: 5px; color: var(--primary-color); font-size: 18px; }
+        .book-author { color: #666; margin-bottom: 10px; font-size: 14px; }
+        .book-price { color: var(--accent-color); font-weight: bold; margin-bottom: 15px; font-size: 18px; }
+        .book-quantity { font-size: 12px; color: #2E7D32; margin-bottom: 10px; }
+        .book-description { font-size: 12px; color: #666; margin-bottom: 10px; line-height: 1.4; }
+        .book-buttons { display: flex; gap: 10px; }
+        .buy-btn, .borrow-btn { flex: 1; padding: 8px; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
+        .buy-btn { background: linear-gradient(135deg, #2E7D32, #4CAF50); color: white; }
+        .borrow-btn { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; }
+        .buy-btn.active, .borrow-btn.active { background: #C62828; }
+        .quantity-badge { position: absolute; top: -5px; right: -5px; background: var(--accent-color); color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
+        .cart-buttons { display: flex; gap: 15px; margin: 20px 0; }
+        .cart-btn { flex: 1; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 50px; font-size: 16px; cursor: pointer; transition: all 0.3s; }
+        .cart-btn:hover { background: var(--accent-color); }
+        .modal-content { border-radius: 20px; border: none; }
+        .modal-header { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border-radius: 20px 20px 0 0; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #e0e0e0; flex-wrap: wrap; gap: 10px; }
+        .cart-total { font-size: 18px; font-weight: bold; padding: 15px; background: var(--light-bg); border-radius: 10px; margin-top: 15px; }
+        .alert-container { position: fixed; top: 20px; {% if lang == 'ar' %}right: 20px;{% else %}left: 20px;{% endif %} z-index: 10000; min-width: 300px; }
+        .order-number { display: inline-block; background: var(--accent-color); color: white; padding: 5px 10px; border-radius: 5px; margin-top: 10px; }
+        .whatsapp-link { color: #25D366; text-decoration: none; font-weight: bold; }
+        .whatsapp-link:hover { text-decoration: underline; }
+        @media (max-width: 768px) { .books-grid { grid-template-columns: repeat(2, 1fr); } }
+    </style>
+</head>
+<body>
+    <div class="alert-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="language-selector">
+        <a href="/set_language/en" class="flag-link {% if lang == 'en' %}active{% endif %}">🇺🇸</a>
+        <a href="/set_language/fr" class="flag-link {% if lang == 'fr' %}active{% endif %}">🇫🇷</a>
+        <a href="/set_language/ar" class="flag-link {% if lang == 'ar' %}active{% endif %}">🇲🇦</a>
+    </div>
+
+    {% if is_admin %}
+    <div class="admin-button">
+        <a href="/admin" class="admin-btn"><i class="fas fa-chalkboard-user"></i></a>
+    </div>
+    {% else %}
+    <div class="admin-button">
+        <button class="admin-btn" data-bs-toggle="modal" data-bs-target="#loginModal"><i class="fas fa-user-lock"></i></button>
+    </div>
+    {% endif %}
+
+    <div class="main-container">
+        <div class="welcome-section">
+            <h1 class="welcome-title">{{ t.welcome }}</h1>
+            <p class="welcome-subtitle">{{ t.subtitle }}</p>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="search-filter">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 {{ t.search_books }}..." autocomplete="off">
+                <button onclick="searchBooks()" style="display:none">{{ t.search }}</button>
+            </div>
+            <div class="categories">
+                <button class="category-btn active" data-category="all" onclick="filterCategory('all')">📚 {{ t.all }}</button>
+                <button class="category-btn" data-category="رواية" onclick="filterCategory('رواية')">📖 {{ t.novel }}</button>
+                <button class="category-btn" data-category="علمية" onclick="filterCategory('علمية')">🔬 {{ t.scientific }}</button>
+                <button class="category-btn" data-category="تاريخية" onclick="filterCategory('تاريخية')">🏛️ {{ t.history }}</button>
+                <button class="category-btn" data-category="أطفال" onclick="filterCategory('أطفال')">🧒 {{ t.kids }}</button>
+                <button class="category-btn" data-category="دينية" onclick="filterCategory('دينية')">🕌 {{ t.religious }}</button>
+                <button class="category-btn" data-category="سياسية" onclick="filterCategory('سياسية')">⚖️ {{ t.political }}</button>
+                <button class="category-btn" data-category="فلسفة" onclick="filterCategory('فلسفة')">💭 {{ t.philosophy }}</button>
+            </div>
+        </div>
+
+        <!-- Cart Buttons -->
+        <div class="cart-buttons">
+            <button class="cart-btn" onclick="openPurchaseCart()"><i class="fas fa-shopping-cart"></i> 🛒 {{ t.my_cart }} (<span id="cartCount">0</span>)</button>
+            <button class="cart-btn" onclick="openBorrowCart()"><i class="fas fa-book"></i> 📖 {{ t.my_borrow }} (<span id="borrowCount">0</span>)</button>
+        </div>
+
+        <!-- Books Container -->
+        <div class="books-container">
+            <h2 class="books-title"><i class="fas fa-book"></i> 📚 كتبنا</h2>
+            <div class="books-grid" id="booksGrid">
+                {% for book in books %}
+                <div class="book-card" data-id="{{ book.id }}" data-title="{{ book.get_title(lang) }}" data-author="{{ book.get_author(lang) }}" data-category="{{ book.category }}" data-price="{{ book.price }}" data-quantity="{{ book.quantity }}">
+                    <div class="book-image">
+                        <img src="{{ url_for('static', filename='images/' + book.image) }}" onerror="this.src='https://via.placeholder.com/120x160?text=Book'">
+                    </div>
+                    <div class="book-title">{{ book.get_title(lang) }}</div>
+                    <div class="book-author">{{ book.get_author(lang) }}</div>
+                    <div class="book-price">{{ book.price }} DH</div>
+                    {% set description = book.get_description(lang) %}
+                    {% if description %}
+                    <div class="book-description"><i class="fas fa-align-left"></i> {{ description[:80] }}{% if description|length > 80 %}...{% endif %}</div>
+                    {% endif %}
+                    <div class="book-quantity">📚 {{ t.available_quantity }}: {{ book.quantity }}</div>
+                    <div class="book-buttons">
+                        <button class="buy-btn" onclick="togglePurchase('{{ book.get_title(lang) }}', {{ book.price }}, '{{ book.get_author(lang) }}', {{ book.quantity }}, this)">{{ t.buy }}</button>
+                        <button class="borrow-btn" onclick="toggleBorrow('{{ book.get_title(lang) }}', '{{ book.get_author(lang) }}', {{ book.quantity }}, this)">{{ t.borrow }}</button>
+                    </div>
+                    <div class="quantity-badge" style="display:none;">0</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- WhatsApp Contact -->
+        <div class="text-center mt-3 mb-3">
+            <a href="https://wa.me/{{ settings.whatsapp_number }}" target="_blank" class="whatsapp-link">
+                <i class="fab fa-whatsapp fa-2x"></i> {{ t.whatsapp_contact }}: {{ settings.whatsapp_number }}
+            </a>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">{{ t.password }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><form action="/admin/login" method="post"><div class="modal-body"><input type="password" name="password" class="form-control" placeholder="{{ t.password }}" required></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t.cancel }}</button><button type="submit" class="btn btn-primary">{{ t.confirm }}</button></div></form></div></div></div>
+
+    <!-- Purchase Cart Modal -->
+    <div class="modal fade" id="purchaseCartModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">🛒 {{ t.my_cart }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div id="purchaseCartItems"></div><div class="cart-total"><div><strong>{{ t.total }}:</strong> <span id="purchaseTotal">0</span> DH</div><div><strong>{{ t.delivery_fee }}:</strong> {{ settings.purchase_delivery_fee }} DH</div><div><strong>{{ t.grand_total }}:</strong> <span id="purchaseGrandTotal">0</span> DH</div></div><hr><h6>{{ t.checkout }}</h6><div class="mb-3"><label>{{ t.name }}</label><input type="text" id="purchase_name" class="form-control" required></div><div class="mb-3"><label>{{ t.phone }}</label><input type="tel" id="purchase_phone" class="form-control" required></div><div class="mb-3"><label>{{ t.email }}</label><input type="email" id="purchase_email" class="form-control"></div><div class="mb-3"><label>{{ t.address }}</label><textarea id="purchase_address" class="form-control" rows="2" required></textarea></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t.cancel }}</button><button type="button" class="btn btn-primary" onclick="submitPurchaseOrder()">{{ t.confirm }}</button></div></div></div></div>
+
+    <!-- Borrow Cart Modal -->
+    <div class="modal fade" id="borrowCartModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">📖 {{ t.my_borrow }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div id="borrowCartItems"></div><div class="cart-total"><div><strong>{{ t.borrow_price_per_day }}:</strong> {{ settings.borrow_price_per_day }} DH/{{ t.day }}</div><div><strong>{{ t.delivery_fee }}:</strong> {{ settings.borrow_delivery_fee }} DH</div><div><strong>{{ t.total_borrow_price }}:</strong> <span id="borrowTotalPrice">0</span> DH</div></div><hr><h6>{{ t.checkout }}</h6><div class="mb-3"><label>{{ t.name }}</label><input type="text" id="borrow_name" class="form-control" required></div><div class="mb-3"><label>{{ t.phone }}</label><input type="tel" id="borrow_phone" class="form-control" required></div><div class="mb-3"><label>{{ t.email }}</label><input type="email" id="borrow_email" class="form-control"></div><div class="mb-3"><label>{{ t.id_card }}</label><input type="text" id="borrow_id_card" class="form-control" required></div><div class="mb-3"><label>{{ t.id_card_image }}</label><input type="file" id="borrow_id_image" class="form-control" accept="image/*" capture="environment"></div><hr><div class="row"><div class="col-md-6"><div class="mb-3"><label>{{ t.select_borrow_date }}</label><input type="date" id="borrow_date" class="form-control" value="{{ today }}" required></div></div><div class="col-md-6"><div class="mb-3"><label>{{ t.select_return_date }}</label><input type="date" id="return_date" class="form-control" value="{{ default_return }}" required></div></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t.cancel }}</button><button type="button" class="btn btn-primary" onclick="submitBorrowOrder()">{{ t.confirm }}</button></div></div></div></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ==================== منع التخزين المؤقت ====================
+        window.addEventListener('load', function() {
+            sessionStorage.clear();
+            localStorage.removeItem('last_invoice');
+            localStorage.removeItem('current_invoice');
+            console.log('✅ تم تنظيف التخزين المؤقت');
+        });
+
+        let purchaseCart = [];
+        let borrowCart = [];
+        let currentCategory = 'all';
+        let borrowPricePerDay = {{ settings.borrow_price_per_day }};
+        let purchaseDeliveryFee = {{ settings.purchase_delivery_fee }};
+        let borrowDeliveryFee = {{ settings.borrow_delivery_fee }};
+        let whatsappNumber = '{{ settings.whatsapp_number }}';
+        let t = {{ t|tojson }};
+
+        function calculateBorrowPrice() {
+            let borrowDate = document.getElementById('borrow_date').value;
+            let returnDate = document.getElementById('return_date').value;
+            if(borrowDate && returnDate) {
+                let start = new Date(borrowDate);
+                let end = new Date(returnDate);
+                let days = Math.max(Math.ceil((end - start) / (1000 * 60 * 60 * 24)), 1);
+                let totalBooks = borrowCart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+                let total = (days * borrowPricePerDay * totalBooks) + borrowDeliveryFee;
+                document.getElementById('borrowTotalPrice').innerText = total;
+                return total;
+            }
+            return 0;
+        }
+        
+        document.getElementById('borrow_date')?.addEventListener('change', calculateBorrowPrice);
+        document.getElementById('return_date')?.addEventListener('change', calculateBorrowPrice);
+        
+        function checkAvailability(title, requestedQty, availableQty) {
+            if(requestedQty > availableQty) {
+                showAlert(t.flash_cannot_exceed_quantity || '⚠️ الكمية المطلوبة من "' + title + '" أكبر من المتاحة (' + availableQty + ')', 'danger');
+                return false;
+            }
+            return true;
+        }
+        
+        function togglePurchase(title, price, author, availableQty, btn) {
+            let existingIndex = purchaseCart.findIndex(i => i.name === title);
+            
+            if(existingIndex !== -1) {
+                purchaseCart.splice(existingIndex, 1);
+                btn.classList.remove('active');
+                btn.innerHTML = t.buy;
+                showAlert(t.flash_removed_from_cart || '❌ تم إلغاء "' + title + '" من سلة الشراء', 'info');
+            } else {
+                if(availableQty < 1) {
+                    showAlert(t.flash_unavailable || '⚠️ كتاب "' + title + '" غير متوفر حالياً', 'danger');
+                    return;
+                }
+                purchaseCart.push({name: title, price: price, author: author, quantity: 1, availableQty: availableQty});
+                btn.classList.add('active');
+                btn.innerHTML = '✓ تم';
+                showAlert(t.flash_added_to_cart || '✅ تم إضافة "' + title + '" إلى سلة الشراء', 'success');
+            }
+            updatePurchaseCartDisplay();
+            updateAllBadges();
+        }
+        
+        function updatePurchaseCartDisplay() {
+            let div = document.getElementById('purchaseCartItems');
+            let total = 0;
+            if(purchaseCart.length === 0) {
+                div.innerHTML = '<p class="text-center text-muted">' + t.empty_cart + '</p>';
+            } else {
+                let html = '';
+                purchaseCart.forEach((item, i) => {
+                    let itemTotal = item.price * item.quantity;
+                    total += itemTotal;
+                    html += `<div class="cart-item"><div><strong>${item.name}</strong><br><small>${item.author} - ${item.price} DH × ${item.quantity}</small></div><div><span class="fw-bold">${itemTotal} DH</span><button class="btn btn-sm btn-warning ms-2" onclick="changePurchaseQty(${i},-1)">-</button><button class="btn btn-sm btn-success ms-1" onclick="changePurchaseQty(${i},1)">+</button><button class="btn btn-sm btn-danger ms-1" onclick="removePurchaseItem(${i})">🗑️</button></div></div>`;
+                });
+                div.innerHTML = html;
+            }
+            document.getElementById('purchaseTotal').innerText = total;
+            document.getElementById('purchaseGrandTotal').innerText = total + purchaseDeliveryFee;
+        }
+        
+        function changePurchaseQty(i, delta) {
+            let newQty = purchaseCart[i].quantity + delta;
+            let availableQty = purchaseCart[i].availableQty;
+            if(newQty > 0 && newQty <= availableQty) {
+                purchaseCart[i].quantity = newQty;
+            } else if(newQty > availableQty) {
+                showAlert(t.flash_cannot_exceed_quantity || `⚠️ لا يمكن تجاوز الكمية المتاحة (${availableQty})`, 'danger');
+                return;
+            } else {
+                purchaseCart.splice(i,1);
+            }
+            updatePurchaseCartDisplay();
+            updateAllBadges();
+        }
+        
+        function removePurchaseItem(i) {
+            let title = purchaseCart[i].name;
+            purchaseCart.splice(i,1);
+            updatePurchaseCartDisplay();
+            updateAllBadges();
+            showAlert(t.flash_removed_from_cart || '🗑️ تم إزالة "' + title + '" من سلة الشراء', 'info');
+        }
+        
+        function toggleBorrow(title, author, availableQty, btn) {
+            let existingIndex = borrowCart.findIndex(i => i.name === title);
+            
+            if(existingIndex !== -1) {
+                borrowCart.splice(existingIndex, 1);
+                btn.classList.remove('active');
+                btn.innerHTML = t.borrow;
+                showAlert(t.flash_removed_from_cart || '❌ تم إلغاء "' + title + '" من سلة الاستعارة', 'info');
+            } else {
+                if(availableQty < 1) {
+                    showAlert(t.flash_unavailable || '⚠️ كتاب "' + title + '" غير متوفر للاستعارة حالياً', 'danger');
+                    return;
+                }
+                borrowCart.push({name: title, author: author, quantity: 1, availableQty: availableQty});
+                btn.classList.add('active');
+                btn.innerHTML = '✓ تم';
+                showAlert(t.flash_added_to_cart || '✅ تم إضافة "' + title + '" إلى سلة الاستعارة', 'success');
+            }
+            updateBorrowCartDisplay();
+            updateAllBadges();
+            calculateBorrowPrice();
+        }
+        
+        function updateBorrowCartDisplay() {
+            let div = document.getElementById('borrowCartItems');
+            if(borrowCart.length === 0) {
+                div.innerHTML = '<p class="text-center text-muted">' + t.empty_cart + '</p>';
+            } else {
+                let html = '';
+                borrowCart.forEach((item, i) => {
+                    html += `<div class="cart-item"><div><strong>${item.name}</strong><br><small>${item.author}</small></div><div><span class="fw-bold">{{ t.quantity }}: ${item.quantity}</span><button class="btn btn-sm btn-warning ms-2" onclick="changeBorrowQty(${i},-1)">-</button><button class="btn btn-sm btn-success ms-1" onclick="changeBorrowQty(${i},1)">+</button><button class="btn btn-sm btn-danger ms-1" onclick="removeBorrowItem(${i})">🗑️</button></div></div>`;
+                });
+                div.innerHTML = html;
+            }
+        }
+        
+        function changeBorrowQty(i, delta) {
+            let newQty = (borrowCart[i].quantity || 1) + delta;
+            let availableQty = borrowCart[i].availableQty;
+            if(newQty > 0 && newQty <= availableQty) {
+                borrowCart[i].quantity = newQty;
+            } else if(newQty > availableQty) {
+                showAlert(t.flash_cannot_exceed_quantity || `⚠️ لا يمكن تجاوز الكمية المتاحة (${availableQty})`, 'danger');
+                return;
+            } else {
+                borrowCart.splice(i,1);
+            }
+            updateBorrowCartDisplay();
+            updateAllBadges();
+            calculateBorrowPrice();
+        }
+        
+        function removeBorrowItem(i) {
+            let title = borrowCart[i].name;
+            borrowCart.splice(i,1);
+            updateBorrowCartDisplay();
+            updateAllBadges();
+            showAlert(t.flash_removed_from_cart || '🗑️ تم إزالة "' + title + '" من سلة الاستعارة', 'info');
+            calculateBorrowPrice();
+        }
+        
+        function updateAllBadges() {
+            document.querySelectorAll('.book-card').forEach(card => {
+                let title = card.querySelector('.book-title').innerText;
+                let purchaseItem = purchaseCart.find(i => i.name === title);
+                let borrowItem = borrowCart.find(i => i.name === title);
+                let badge = card.querySelector('.quantity-badge');
+                let buyBtn = card.querySelector('.buy-btn');
+                let borrowBtn = card.querySelector('.borrow-btn');
+                
+                if(purchaseItem) {
+                    buyBtn.classList.add('active');
+                    buyBtn.innerHTML = '✓ تم';
+                } else {
+                    buyBtn.classList.remove('active');
+                    buyBtn.innerHTML = t.buy;
+                }
+                
+                if(borrowItem) {
+                    borrowBtn.classList.add('active');
+                    borrowBtn.innerHTML = '✓ تم';
+                } else {
+                    borrowBtn.classList.remove('active');
+                    borrowBtn.innerHTML = t.borrow;
+                }
+                
+                let total = (purchaseItem?.quantity || 0) + (borrowItem?.quantity || 0);
+                if(badge) {
+                    if(total > 0) {
+                        badge.style.display = 'flex';
+                        badge.innerText = total;
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            });
+            document.getElementById('cartCount').innerText = purchaseCart.length;
+            document.getElementById('borrowCount').innerText = borrowCart.length;
+        }
+        
+        function openPurchaseCart() {
+            updatePurchaseCartDisplay();
+            new bootstrap.Modal(document.getElementById('purchaseCartModal')).show();
+        }
+        
+        function openBorrowCart() {
+            updateBorrowCartDisplay();
+            calculateBorrowPrice();
+            new bootstrap.Modal(document.getElementById('borrowCartModal')).show();
+        }
+        
+        function submitPurchaseOrder() {
+            let name = document.getElementById('purchase_name').value;
+            let phone = document.getElementById('purchase_phone').value;
+            let address = document.getElementById('purchase_address').value;
+            
+            if(!name || !phone || !address) {
+                showAlert(t.flash_required_fields || '⚠️ الرجاء ملء جميع الحقول', 'danger');
+                return;
+            }
+            if(purchaseCart.length === 0) {
+                showAlert(t.flash_cart_empty || '⚠️ سلة الشراء فارغة', 'danger');
+                return;
+            }
+            
+            let total = purchaseCart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + purchaseDeliveryFee;
+            
+            fetch('/purchase/order', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    name: name,
+                    phone: phone,
+                    email: document.getElementById('purchase_email').value,
+                    address: address,
+                    items: purchaseCart,
+                    total: total
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) {
+                    // استخدام الترجمة مع استبدال المتغيرات
+                    let msg = t.flash_order_submitted
+                        .replace('{order_id}', data.order_id)
+                        .replace('{whatsapp}', whatsappNumber);
+                    showAlert(msg, 'success');
+                    
+                    if(data.invoice_url) {
+                        window.open(data.invoice_url, '_blank');
+                    }
+                    
+                    purchaseCart = [];
+                    updatePurchaseCartDisplay();
+                    updateAllBadges();
+                    bootstrap.Modal.getInstance(document.getElementById('purchaseCartModal')).hide();
+                    document.getElementById('purchase_name').value = '';
+                    document.getElementById('purchase_phone').value = '';
+                    document.getElementById('purchase_email').value = '';
+                    document.getElementById('purchase_address').value = '';
+                    setTimeout(() => location.reload(), 60000);
+                } else {
+                    showAlert(data.message, 'danger');
+                }
+            });
+        }
+        
+        function submitBorrowOrder() {
+            let name = document.getElementById('borrow_name').value;
+            let phone = document.getElementById('borrow_phone').value;
+            let idCard = document.getElementById('borrow_id_card').value;
+            let idImage = document.getElementById('borrow_id_image').files[0];
+            let borrowDate = document.getElementById('borrow_date').value;
+            let returnDate = document.getElementById('return_date').value;
+            
+            if(!name || !phone || !idCard) {
+                showAlert(t.flash_required_fields || '⚠️ الرجاء ملء جميع الحقول', 'danger');
+                return;
+            }
+            if(!borrowDate || !returnDate) {
+                showAlert(t.flash_required_dates || '⚠️ الرجاء اختيار تاريخ الاستعارة والإرجاع', 'danger');
+                return;
+            }
+            if(borrowCart.length === 0) {
+                showAlert(t.flash_cart_empty || '⚠️ لا توجد كتب للاستعارة', 'danger');
+                return;
+            }
+            
+            let days = Math.max(Math.ceil((new Date(returnDate) - new Date(borrowDate)) / (1000 * 60 * 60 * 24)), 1);
+            let totalBooks = borrowCart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+            let totalPrice = (days * borrowPricePerDay * totalBooks) + borrowDeliveryFee;
+            
+            let borrowItems = borrowCart.map(item => ({
+                name: item.name,
+                author: item.author,
+                quantity: item.quantity
+            }));
+            
+            let formData = {
+                name: name,
+                phone: phone,
+                email: document.getElementById('borrow_email').value,
+                id_card_number: idCard,
+                items: borrowItems,
+                borrow_date: borrowDate,
+                return_date: returnDate,
+                total_price: totalPrice
+            };
+            
+            if(idImage) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    formData.id_card_image = e.target.result;
+                    sendBorrowRequest(formData);
+                };
+                reader.readAsDataURL(idImage);
+            } else {
+                sendBorrowRequest(formData);
+            }
+        }
+        
+        function sendBorrowRequest(data) {
+            fetch('/borrow/order', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) {
+                    let msg = t.flash_order_submitted
+                        .replace('{order_id}', data.order_id)
+                        .replace('{whatsapp}', whatsappNumber);
+                    showAlert(msg, 'success');
+                    
+                    if(data.invoice_url) {
+                        window.open(data.invoice_url, '_blank');
+                    }
+                    
+                    borrowCart = [];
+                    updateBorrowCartDisplay();
+                    updateAllBadges();
+                    bootstrap.Modal.getInstance(document.getElementById('borrowCartModal')).hide();
+                    document.getElementById('borrow_name').value = '';
+                    document.getElementById('borrow_phone').value = '';
+                    document.getElementById('borrow_email').value = '';
+                    document.getElementById('borrow_id_card').value = '';
+                    document.getElementById('borrow_id_image').value = '';
+                    setTimeout(() => location.reload(), 60000);
+                } else {
+                    showAlert(data.message, 'danger');
+                }
+            });
+        }
+        
+        function filterBooks() {
+            let searchInput = document.getElementById('searchInput');
+            let searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            let books = document.querySelectorAll('.book-card');
+            let visibleCount = 0;
+            
+            books.forEach(book => {
+                let title = book.querySelector('.book-title')?.innerText.toLowerCase() || '';
+                let author = book.querySelector('.book-author')?.innerText.toLowerCase() || '';
+                let bookCategory = book.dataset.category;
+                
+                let categoryMatch = (currentCategory === 'all' || bookCategory === currentCategory);
+                let searchMatch = (searchTerm === '' || title.includes(searchTerm) || author.includes(searchTerm));
+                
+                if (categoryMatch && searchMatch) {
+                    book.style.display = '';
+                    visibleCount++;
+                } else {
+                    book.style.display = 'none';
+                }
+            });
+            
+            let booksGrid = document.getElementById('booksGrid');
+            let noResultsMsg = document.getElementById('noResultsMessage');
+            
+            if (visibleCount === 0) {
+                if (!noResultsMsg && booksGrid) {
+                    noResultsMsg = document.createElement('div');
+                    noResultsMsg.id = 'noResultsMessage';
+                    noResultsMsg.className = 'text-center p-5';
+                    noResultsMsg.innerHTML = '<i class="fas fa-search fa-3x mb-3"></i><h5>' + t.no_results + '</h5><p class="text-muted">' + t.try_different_keywords + '</p>';
+                    booksGrid.appendChild(noResultsMsg);
+                }
+                if (noResultsMsg) noResultsMsg.style.display = 'block';
+            } else {
+                if (noResultsMsg) noResultsMsg.style.display = 'none';
+            }
+        }
+        
+        function filterCategory(category) {
+            currentCategory = category;
+            
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            let activeBtn = document.querySelector(`.category-btn[data-category="${category}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            filterBooks();
+        }
+        
+        function searchBooks() {
+            filterBooks();
+        }
+        
+        function showAlert(message, type) {
+            let a = document.createElement('div');
+            a.className = `alert alert-${type} alert-dismissible fade show`;
+            a.innerHTML = message.replace(/\n/g, '<br>') + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+            document.querySelector('.alert-container').appendChild(a);
+            setTimeout(() => a.remove(), 60000);
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('keyup', filterBooks);
+            }
+        });
+    </script>
+</body>
+</html>
