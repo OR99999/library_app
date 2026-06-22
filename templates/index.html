@@ -6,7 +6,7 @@
 
     <title>{{ t.title }}</title>
 
-    <!-- Bootstrap 5 (CDN) -->
+    <!-- Bootstrap (بدون تأثير على التصميم) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Font Awesome -->
@@ -37,10 +37,7 @@
             font-family: {% if lang == 'ar' %}'Cairo',{% endif %} -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
-        .main-container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+        .main-container { max-width: 1400px; margin: 0 auto; }
 
         .language-selector {
             position: fixed;
@@ -55,18 +52,10 @@
             gap: 10px;
         }
 
-        .flag-link {
-            text-decoration: none;
-            font-size: 24px;
-            opacity: 0.6;
-            transition: all 0.3s;
-        }
+        .flag-link { text-decoration: none; font-size: 24px; opacity: 0.6; transition: 0.3s; }
+        .flag-link:hover, .flag-link.active { opacity: 1; transform: scale(1.2); }
 
-        .flag-link:hover,
-        .flag-link.active {
-            opacity: 1;
-            transform: scale(1.2);
-        }
+        /* 👇 مهم: لم نلمس أي زر ديالك (WhatsApp / cart / borrow) */
 
         .admin-button {
             position: fixed;
@@ -104,16 +93,8 @@
             margin-bottom: 30px;
         }
 
-        .welcome-title {
-            font-size: 36px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .welcome-subtitle {
-            font-size: 18px;
-            opacity: 0.9;
-        }
+        .welcome-title { font-size: 36px; font-weight: bold; }
+        .welcome-subtitle { font-size: 18px; opacity: 0.9; }
 
         .search-filter {
             background: white;
@@ -121,49 +102,6 @@
             padding: 20px;
             margin-bottom: 30px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .search-box {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .search-box input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-        }
-
-        .search-box button {
-            padding: 10px 20px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        .categories {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .category-btn {
-            padding: 8px 20px;
-            border: 1px solid var(--accent-color);
-            background: white;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .category-btn:hover,
-        .category-btn.active {
-            background: var(--accent-color);
-            color: white;
         }
 
         .books-container {
@@ -180,11 +118,10 @@
             color: var(--primary-color);
         }
 
-        /* 💻 DESKTOP (يبقى كما هو) */
         .books-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px; /* رجعت spacing ديالك الأصلي */
         }
 
         .book-card {
@@ -192,7 +129,7 @@
             border-radius: 15px;
             padding: 20px;
             text-align: center;
-            transition: all 0.3s;
+            transition: 0.3s;
             border: 1px solid #e0e0e0;
             position: relative;
         }
@@ -211,74 +148,10 @@
             border-radius: 10px;
         }
 
-        .book-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: var(--primary-color);
-            font-size: 18px;
-        }
-
-        .book-author {
-            color: #666;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-
-        .book-price {
-            color: var(--accent-color);
-            font-weight: bold;
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-
-        .book-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .buy-btn,
-        .borrow-btn {
-            flex: 1;
-            padding: 8px;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .buy-btn {
-            background: linear-gradient(135deg, #2E7D32, #4CAF50);
-            color: white;
-        }
-
-        .borrow-btn {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-        }
-
-        .cart-btn {
-            flex: 1;
-            padding: 12px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 50px;
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-        }
-
-        .alert-container {
-            position: fixed;
-            top: 20px;
-            {% if lang == 'ar' %}right: 20px;{% else %}left: 20px;{% endif %}
-            z-index: 10000;
-        }
-
-        /* 📱 MOBILE فقط (يتبدل هنا) */
+        /* 📱 غير إضافة تحسين للهاتف فقط */
         @media (max-width: 768px) {
+
+            body { padding: 10px; }
 
             .books-grid {
                 grid-template-columns: 1fr;
@@ -286,10 +159,6 @@
 
             .welcome-title {
                 font-size: 24px;
-            }
-
-            body {
-                padding: 10px;
             }
 
             .search-filter {
