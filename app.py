@@ -1844,3 +1844,10 @@ if __name__ == '__main__':
         AdminSettings.get()
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
+    def init_app():
+    with app.app_context():
+        db.create_all()
+        init_books()
+        AdminSettings.get()
+
+init_app()
